@@ -1,18 +1,18 @@
 library(mgcv)
 
-set.seed(10)
+set.seed(0)
 
 # Generate data
 n = 500
 dat <- gamSim(n = n)[, c("x0", "x1", "x2", "x3", "y")]
 
 # Break up data into clustered blocks using kmeans
-clusters = 4
+clusters <- 4
 clust <- stats::kmeans(dat[, c("x0","x1", "x2", "x3")], clusters)
 dat$j <- clust$cluster
 #j <- rep(1:4, each = 125) # Alternate option, testing if the issue is that we need equal-size groups. Nope, still crashes.
 # Look at the clustered points, out-of-sample will be the unfilled ones.
-if(interactive()) pairs(dat[, c("x0", "x1", "x2", "x3")], col = clust$cluster, pch=ifelse(clust$cluster == clusters, 1, 20), cex = 2)
+if(interactive()) pairs(dat[, c("x0", "x1", "x2", "x3")], col = dat$j, pch=ifelse(dat$j == clusters, 1, 20), cex = 2)
 
 dat <- dat[order(dat$j), ]
 rownames(dat) <- NULL
@@ -30,9 +30,9 @@ nb$mi <- nb$m
 
 # Fit models, (but ncv_cluster always crashes)
 models <- list(
-  reml = gam(y~s(x0)+s(x1)+s(x2)+s(x3),data = dat, method = "REML"),
-  ncv_1 = gam(y~s(x0)+s(x1)+s(x2)+s(x3),data = dat, method = "NCV"),
-  ncv_cluster = gam(y~s(x0)+s(x1)+s(x2)+s(x3),data = dat, method = "NCV", nei = nb)
+  reml = gam(y~s(x0)+s(x1)+s(x2)+s(x3),data = train, method = "REML"),
+  ncv_1 = gam(y~s(x0)+s(x1)+s(x2)+s(x3),data = train, method = "NCV"),
+  ncv_cluster = gam(y~s(x0)+s(x1)+s(x2)+s(x3),data = train, method = "NCV", nei = nb)
 )
 
 # Look at RMSE performance in and out of sample
